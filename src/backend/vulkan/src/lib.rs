@@ -349,6 +349,18 @@ impl hal::Instance<Backend> for Instance {
             hal::UnsupportedBackend
         })?;
 
+        let api_version_default = vk::make_version(1, 0, 0);
+        let api_version = entry
+            .try_enumerate_instance_version()
+            .unwrap_or(Some(api_version_default))
+            .unwrap_or(api_version_default);
+        trace!(
+            "Using Vulkan api version {}.{}.{}",
+            vk::version_major(api_version),
+            vk::version_minor(api_version),
+            vk::version_patch(api_version)
+        );
+
         let app_name = CString::new(name).unwrap();
         let app_info = vk::ApplicationInfo {
             s_type: vk::StructureType::APPLICATION_INFO,
@@ -357,7 +369,7 @@ impl hal::Instance<Backend> for Instance {
             application_version: version,
             p_engine_name: b"gfx-rs\0".as_ptr() as *const _,
             engine_version: 1,
-            api_version: vk::make_version(1, 0, 0),
+            api_version,
         };
 
         let instance_extensions = entry

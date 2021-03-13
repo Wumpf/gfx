@@ -7,10 +7,12 @@ use crate::{
         output_merger::{ColorBlendDesc, DepthStencilDesc, Face},
         BasePipeline, EntryPoint, PipelineCreationFlags, State,
     },
-    Backend,
+    Backend, Features,
 };
 
 use std::ops::Range;
+
+use super::CreationError;
 
 /// A simple struct describing a rect with integer coordinates.
 #[derive(Clone, Copy, Debug, Hash, PartialEq, PartialOrd)]
@@ -167,6 +169,26 @@ impl<'a, B: Backend> GraphicsPipelineDesc<'a, B> {
             parent: BasePipeline::None,
         }
     }
+
+    /// Checks if the desc is supported with the given feature set.
+    pub fn validate_creation_desc_support(&self, features: &Features) -> Result<(), CreationError> {
+        if self.rasterizer.conservative
+            && (!features.contains(Features::CONSERVATIVE_RASTERIZATION)
+            // No line support implemented (or even indicated by this feature flag)
+                || self.rasterizer.polygon_mode != PolygonMode::Fill)
+        {
+            return Err(CreationError::UnsupportedConservativeRasterization(
+                self.rasterizer.polygon_mode,
+            ));
+        }
+        if self.rasterizer.depth_clamping {
+            if !features.contains(Features::DEPTH_CLAMP) {
+                return Err(CreationError::UnsupportedDepthClamping);
+            }
+        }
+
+        Ok(())
+    }
 }
 
 /// Methods for rasterizing polygons, ie, turning the mesh
@@ -229,6 +251,7 @@ pub struct Rasterizer {
     /// What depth bias, if any, to use for the drawn primitives.
     pub depth_bias: Option<State<DepthBias>>,
     /// Controls how triangles will be rasterized depending on their overlap with pixels.
+    /// If set to true, overestimation rasterization is enabled.
     pub conservative: bool,
     /// Controls width of rasterized line segments.
     pub line_width: State<f32>,

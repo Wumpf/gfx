@@ -24,6 +24,12 @@ pub enum CreationError {
     /// Unsupported pipeline on hardware or implementation. Example: mesh shaders on DirectX 11.
     #[error("Pipeline kind is not supported")]
     UnsupportedPipeline,
+    /// Conservative rasterization was enabled but is not supported for either device at all or specific polygon mode.
+    #[error("Conserative rasterization is not supported for the {0:?} polygon mode")]
+    UnsupportedConservativeRasterization(PolygonMode),
+    /// Depth clamping was enabled but not supported by the device.
+    #[error("Depth clamping was enabled but is not supported by the device")]
+    UnsupportedDepthClamping,
     /// Invalid subpass (not part of renderpass).
     #[error("Invalid subpass: {0:?}")]
     InvalidSubpass(pass::SubpassId),

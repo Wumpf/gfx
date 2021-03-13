@@ -1503,6 +1503,7 @@ impl hal::device::Device<Backend> for Device {
         cache: Option<&n::PipelineCache>,
     ) -> Result<n::GraphicsPipeline, pso::CreationError> {
         debug!("create_graphics_pipeline {:#?}", pipeline_desc);
+        pipeline_desc.validate_creation_desc_support(&self.features)?;
         let pipeline = metal::RenderPipelineDescriptor::new();
         let pipeline_layout = &pipeline_desc.layout;
         let (rp_attachments, subpass) = {

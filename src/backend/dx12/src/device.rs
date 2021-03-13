@@ -1902,12 +1902,14 @@ impl d::Device<B> for Device {
         desc: &pso::GraphicsPipelineDesc<'a, B>,
         _cache: Option<&()>,
     ) -> Result<r::GraphicsPipeline, pso::CreationError> {
+        let features = &self.features;
+        desc.validate_creation_desc_support(features)?;
+
         enum ShaderBc {
             Owned(native::Blob),
             Borrowed(native::Blob),
             None,
         }
-        let features = &self.features;
         impl ShaderBc {
             pub fn shader(&self) -> native::Shader {
                 match *self {

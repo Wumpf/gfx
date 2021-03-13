@@ -988,6 +988,7 @@ impl d::Device<B> for Device {
         desc: &pso::GraphicsPipelineDesc<'a, B>,
         _cache: Option<&()>,
     ) -> Result<n::GraphicsPipeline, pso::CreationError> {
+        desc.validate_creation_desc_support(&self.features)?;
         let (vertex_buffers, desc_attributes, input_assembler, vs) = match desc.primitive_assembler
         {
             pso::PrimitiveAssemblerDesc::Vertex {

@@ -965,6 +965,7 @@ impl device::Device<Backend> for Device {
         _cache: Option<&()>,
     ) -> Result<GraphicsPipeline, pso::CreationError> {
         let features = &self.features;
+        desc.validate_creation_desc_support(features)?;
         let build_shader =
             |stage: ShaderStage, source: Option<&pso::EntryPoint<'a, Backend>>| match source {
                 Some(src) => Self::extract_entry_point(stage, src, desc.layout, features),
